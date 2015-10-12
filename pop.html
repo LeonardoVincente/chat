@@ -1,0 +1,23 @@
+
+
+  <polymer-element name="my-custom-element" noscript>
+    <template>
+      <!-- Shadow DOM subtree -->
+      <span>People say: </span>
+        <content select="q"></content>
+      <footer>sometimes</footer>
+    </template>
+  </polymer-element>
+
+
+
+
+<span>I am in the light</span>
+<my-custom-element>
+  <q>Hello World</q> <!-- part of my-custom-element's light DOM -->
+</my-custom-element>
+<style>
+span{
+	color: red;
+}
+</style>

@@ -1,0 +1,109 @@
+<html>
+	<head>
+		<title>Socket io with node js</title>
+		<style>
+			#chat{
+				height:500px;
+			}
+			#contentWrap{
+				display:none;
+			}
+			#chatWrap{
+				float: left;
+				border: solid 1px black;
+			}
+			.error{
+				color: red;
+			}
+			.wisper{
+				color: blue;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="nickWrap">
+			<p>Enter Name:</p>
+			<p id="nickError"></p>
+			<form id="setNick" action="">
+				<input type="text" size="35" id="nickname">
+				<input type="submit">
+			</form>
+		</div>
+		<div id="contentWrap">
+			<div id="chatWrap">
+				<div id="chat"></div>
+				<form action="" id="send-message">
+					<input type="text" id="message">
+					<input type="submit">
+				</form>
+			</div>
+			<div id="users">
+				
+			</div>
+		</div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			$(document).ready(function(){
+				var socket = io.connect();
+				var nickForm = $("#setNick");
+				var nickError = $("#nickError");
+				var nickBox = $("#nickname");
+				var users = $("#users");
+				var messageForm = $("#send-message");
+				var messageBox = $("#message");
+				var chat = $("#chat");
+
+				nickForm.submit(function(e){
+					e.preventDefault();
+					socket.emit("new user", nickBox.val(), function(data){
+						if(data){
+							$('#nickWrap').hide();
+							$("#contentWrap").show();
+						}else{
+							nickError.html("User name taken try again");
+						}
+
+					});
+					nickBox.val('');
+				});
+
+				socket.on('usernames', function(data){
+					var html = '';
+					for(var i =  0 ; i < data.length; i++){
+						html += data[i] + '<br>';
+						console.log(" added new ");
+					}
+					users.html(html);
+				});
+
+				messageForm.submit(function(e){
+					e.preventDefault();
+					socket.emit('send message', messageBox.val(), function(data){
+						chat.append("<span class='error'><b>"+data+ '</span><br/>')
+					});
+					messageBox.val("");
+				});
+
+				socket.on("load old msgs", function(docs){
+					for(var i = docs.length -1; i >= 0 ; i--){
+						displayMsg(docs[i]);
+					}
+				});
+
+				socket.on('new message', function(data){
+					//chat.append("<span class='msg'><b>"+data.nick+': </b> '+data.msg + '</span><br/>');
+					displayMsg(data);
+				});
+
+				socket.on('wisper', function(data){
+					chat.append("<span class='wisper'><b>"+data.nick+': </b> '+data.msg + '</span><br/>');
+				});
+
+				function displayMsg(data){
+					chat.append("<span class='msg'><b>"+data.nick+': </b> '+data.msg + '</span><br/>');
+				}
+			});
+		</script>
+	</body>
+</html>
